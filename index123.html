@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Portal - Secure Auth</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; display: flex; flex-direction: column; min-height: 100vh; }
+        .header { background-color: #c90000; display: flex; align-items: center; height: 50px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header-item { color: white; text-decoration: none; padding: 0 20px; font-size: 14px; text-transform: uppercase; font-weight: 500; }
+        .header-item.active { color: #c90000; background-color: white; height: 100%; display: flex; align-items: center; }
+        .main-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        
+        .login-card { background-color: white; width: 100%; max-width: 380px; padding: 40px; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+        .login-card h2 { color: #c90000; font-size: 24px; font-weight: 600; margin-top: 0; margin-bottom: 10px; }
+        .login-card p.subtitle { color: #888; font-size: 13px; margin-bottom: 30px; line-height: 1.5; }
+        
+        .input-group { text-align: left; }
+        .input-group label { display: block; color: #c90000; font-weight: 700; font-size: 11px; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.5px; }
+        .login-card input { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+        .login-card input:focus { outline: none; border-color: #c90000; }
+        
+        .login-button { width: 100%; padding: 12px; background-color: #c90000; color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: background-color 0.2s; }
+        .login-button:hover { background-color: #a00000; }
+        
+        .toggle-link { margin-top: 20px; font-size: 13px; color: #555; }
+        .toggle-link a { color: #c90000; text-decoration: none; font-weight: bold; cursor: pointer; }
+        
+        #register-section, #otp-section { display: none; }
+
+        #flash-message {
+            visibility: hidden; min-width: 350px; color: #fff; text-align: center; border-radius: 8px; padding: 25px;
+            position: fixed; z-index: 1000; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            font-size: 20px; font-weight: bold; box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+        #flash-message.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {top: 45%; opacity: 0;} to {top: 50%; opacity: 1;} }
+        @keyframes fadeout { from {top: 50%; opacity: 1;} to {top: 45%; opacity: 0;} }
+        .flash-success { background-color: #28a745 !important; border-bottom: 8px solid #1e7e34; }
+        .flash-error { background-color: #c90000 !important; border-bottom: 8px solid #800000; }
+    </style>
+</head>
+<body>
+
+    <div id="flash-message"></div>
+
+    <div class="header">
+        <a href="#" class="header-item">Home</a>
+        <a href="#" class="header-item active" id="nav-title">Faculty Login</a>
+    </div>
+
+    <div class="main-container">
+        <div class="login-card">
+            
+            <div id="login-section">
+                <h2>Faculty / Staff Login</h2>
+                <p class="subtitle">Log in with your academic credentials for priority scheduling.</p>
+                <div class="input-group">
+                    <label>User ID (Email)</label>
+                    <input type="email" id="id-email" placeholder="faculty@test.com">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="id-password" placeholder="******">
+                </div>
+                <button class="login-button" onclick="facultyLogin()">Log In as Faculty</button>
+                <div class="toggle-link">
+                    New here? <a onclick="toggleAuth('register')">Create an Account</a>
+                </div>
+            </div>
+
+            <div id="register-section">
+                <h2>Create Faculty Account</h2>
+                <p class="subtitle">Register your details in the secure database.</p>
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="reg-name" placeholder="Prof. John Doe">
+                </div>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="reg-email" placeholder="newfaculty@test.com">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="reg-password" placeholder="Create a strong password">
+                </div>
+                <button class="login-button" onclick="facultyRegister()">Register Now</button>
+                <div class="toggle-link">
+                    Already have an account? <a onclick="toggleAuth('login')">Back to Login</a>
+                </div>
+            </div>
+
+            <div id="otp-section">
+                <h2>Two-Step Verification</h2>
+                <p class="subtitle">Enter the 6-digit code from your Authenticator app.</p>
+                <div class="input-group">
+                    <label>OTP Code</label>
+                    <input type="text" id="otp-code" placeholder="000000" maxlength="6" style="letter-spacing: 5px; font-size: 20px; text-align: center;">
+                </div>
+                <button class="login-button" onclick="verifyOTP()">Verify & Access</button>
+                <div class="toggle-link">
+                    Didn't receive it? <a onclick="toggleAuth('login')">Try Login Again</a>
+                </div>
+            </div>
+
+            <div id="message-area" style="margin-top: 15px; font-size: 13px;"></div>
+        </div>
+    </div>
+
+    <script>
+        function showFlash(text, type) {
+            const flash = document.getElementById("flash-message");
+            flash.innerText = text;
+            flash.className = "show " + (type === "success" ? "flash-success" : "flash-error");
+            setTimeout(() => { flash.className = flash.className.replace("show", ""); }, 3000);
+        }
+
+        function toggleAuth(view) {
+            const loginSec = document.getElementById('login-section');
+            const regSec = document.getElementById('register-section');
+            const otpSec = document.getElementById('otp-section');
+            const navTitle = document.getElementById('nav-title');
+            
+            loginSec.style.display = 'none';
+            regSec.style.display = 'none';
+            otpSec.style.display = 'none';
+
+            if(view === 'register') {
+                regSec.style.display = 'block';
+                navTitle.innerText = 'Faculty Registration';
+            } else if (view === 'otp') {
+                otpSec.style.display = 'block';
+                navTitle.innerText = '2FA Verification';
+            } else {
+                loginSec.style.display = 'block';
+                navTitle.innerText = 'Faculty Login';
+            }
+            document.getElementById('message-area').innerText = '';
+        }
+
+        async function facultyLogin() {
+            const email = document.getElementById('id-email').value;
+            const password = document.getElementById('id-password').value;
+    
+            if (!email || !password) {
+                showFlash("⚠️ Missing Credentials", "error");
+                return;
+            }
+
+            const details = { 'username': email, 'password': password };
+            let formBody = [];
+            for (let property in details) {
+                let encodedKey = encodeURIComponent(property);
+                let encodedValue = encodeURIComponent(details[property]);
+                formBody.push(encodedKey + "=" + encodedValue);
+            }
+            formBody = formBody.join("&");
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                    body: formBody
+                });
+
+                // NEW: Handle Rate Limiting (429) specifically
+                if (response.status === 429) {
+                    showFlash("⏳ RATE LIMIT: Too many attempts. Wait 60s.", "error");
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    if (result.requires_2fa) {
+                        showFlash("🛡️ Step 1 Pass: Enter OTP", "success");
+                        localStorage.setItem('temp_email', email);
+                        toggleAuth('otp'); // This flips the UI to the 6-digit box
+                    } else {
+                        showFlash("🔓 ACCESS GRANTED: Welcome!", "success");
+                        localStorage.setItem('access_token', result.access_token);
+                    }
+                } else {
+                    showFlash("❌ " + (result.detail || "Invalid Credentials"), "error");
+                }
+            }catch (error) {
+                showFlash("🔌 SERVER OFFLINE", "error");
+            }
+        }
+        async function verifyOTP() {
+            const otpCode = document.getElementById('otp-code').value;
+            const email = localStorage.getItem('temp_email');
+
+            if (!otpCode || otpCode.length < 6) {
+                showFlash("⚠️ Enter valid 6-digit OTP", "error");
+                return;
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/auth/verify-2fa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, otp: otpCode })
+                });
+                const result = await response.json();
+
+                if (response.ok) {
+                    showFlash("✅ 2FA VERIFIED: Welcome!", "success");
+                    localStorage.setItem('access_token', result.access_token);
+                    localStorage.removeItem('temp_email');
+                } else {
+                    showFlash("❌ INVALID OTP", "error");
+                }
+            } catch (error) {
+                showFlash("🔌 Connection Error", "error");
+            }
+        }
+
+        async function facultyRegister() {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            if (!name || !email || !password) {
+                showFlash("⚠️ Please fill all fields", "error");
+                return;
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: name, email: email, password: password })
+                });
+
+                if (response.ok) {
+                    showFlash("✅ REGISTERED: Account created!", "success");
+                    setTimeout(() => toggleAuth('login'), 2000);
+                } else {
+                    const result = await response.json();
+                    showFlash("❌ FAILED: " + (result.detail || "Error"), "error");
+                }
+            } catch (error) {
+                showFlash("🔌 SERVER OFFLINE", "error");
+            }
+        }
+    </script>
+</body>
+</html>
