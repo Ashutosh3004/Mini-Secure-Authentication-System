@@ -4,12 +4,12 @@ uvicorn
 
 sqlalchemy
 
-slowapi
+passlib[bcrypt]
+
+python-jose[cryptography]
 
 pyotp
 
-python-jose
+slowapi
 
-passlib[bcrypt]
-
-python-multipart
+pydantic[email]
