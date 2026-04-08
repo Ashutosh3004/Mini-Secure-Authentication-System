@@ -5,7 +5,7 @@ from jose import JWTError, jwt
 
 # In a production environment, these should be loaded from environment variables
 # Example: SECRET_KEY = os.getenv("SECRET_KEY")
-SECRET_KEY = "YOUR_SUPER_SECRET_RANDOM_KEY_CHANGE_THIS_IN_PRODUCTION"
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback_dev_key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
