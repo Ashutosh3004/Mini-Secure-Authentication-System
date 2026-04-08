@@ -7,11 +7,11 @@ from jose import JWTError, jwt
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-from .database import get_db
-from .models import User
-from .schemas import UserCreate, UserResponse, TokenResponse
-from .security import hash_password, verify_password
-from .auth import create_access_token, SECRET_KEY, ALGORITHM
+from database import get_db
+from models import User
+from schemas import UserCreate, UserResponse, TokenResponse
+from security import hash_password, verify_password
+from auth import create_access_token, SECRET_KEY, ALGORITHM
 
 import pyotp
 
